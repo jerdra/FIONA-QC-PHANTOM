@@ -1,5 +1,4 @@
 #Ignore input folders 
-input_dcm/*
-input_nii/*
+inputs/*
 qc_output/* 
 pkgs/* 

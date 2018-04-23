@@ -1,4 +1,4 @@
-function [Iave, Isd] = MB_fBIRN_phantom_ABCD(vol4D, meta, output, fwhm)
+function MB_fBIRN_phantom_ABCD(vol4D, meta, output, fwhm)
 
 %   This code is adapted from Gary Glover fBIRN phantom qa.m matlab code
 %   http://www.birncommunity.org/tools-catalog/function-birn-stability-phantom-qa-procedures/

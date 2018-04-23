@@ -1,4 +1,4 @@
-function MB_fBIRN_QA_process_study( input_nii,input_dcm,output, type )
+function MB_fBIRN_QA_process_study( input_nii,input_dcm,output)
 %MB_FBIRN_QA_PROCESS_STUDY Runs on input type <study> data folder,
 %generates QA measures and outputs for each Phantom
 %{
@@ -7,7 +7,6 @@ Usage:
     input_dcm:      Folder containing dcm files to process, needed for
                     extracting relevant header metadata
     output:         Output folder
-    type:           dMRI/fMRI
 %}
 
 
@@ -38,17 +37,13 @@ parfor i = 1 : length(OPT)
     %Locate dMRI nii files
     scanlist = dir(fullfile(pwd,input_nii,OPT(i).name));
     scanlist([scanlist.isdir] == 1) = [];
-    scan_nii = cellfun(@(x) ~isempty(strfind(x,type)) && ~isempty(strfind(x,'nii')), {scanlist.name},'un',1);
+    scan_nii = cellfun(@(x) ~isempty(strfind(x,'fMRI')) && ~isempty(strfind(x,'nii')), {scanlist.name},'un',1);
     nii = {scanlist(scan_nii).name}; %Possibly may have more than one type of flip angle
     split_nii = cellfun(@(x) char(strsplit(x,'/')),nii,'un',0);
     strip_ind = regexp(split_nii,'.nii');
     
     mkdir(output,OPT(i).name); 
-    
-    %Allocate cells for signal noise decomposition 
-    Iave = cell(length(split_nii),1); 
-    Isd = cell(length(split_nii),1); 
-    
+        
     %Generate qc outputs for each flip angle, then run noise decomposition
     for j = 1 : length(split_nii)
         
@@ -68,7 +63,7 @@ parfor i = 1 : length(OPT)
         [vol,fwhm] = preprocess_nii_phantom(nii_path,fullfile(output,OPT(i).name,fa_dir));
         
         %Modified QA routine adding noise decomposition?? 
-        [Iave{j}, Isd{j}] = MB_fBIRN_phantom_ABCD(vol, meta, fullfile(output,OPT(i).name,fa_dir),fwhm);
+        MB_fBIRN_phantom_ABCD(vol, meta, fullfile(output,OPT(i).name,fa_dir),fwhm);
         
     end
     
