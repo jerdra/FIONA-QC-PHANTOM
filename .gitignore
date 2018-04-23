@@ -1,0 +1,5 @@
+#Ignore input folders 
+input_dcm/*
+input_nii/*
+qc_output/* 
+pkgs/* 

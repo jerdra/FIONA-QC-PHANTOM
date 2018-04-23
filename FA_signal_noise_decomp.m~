@@ -1,0 +1,41 @@
+function [ output_args ] = FA_signal_noise_decomp( vol4D,Iave,Isd)
+%FA_SIGNAL_NOISE_DECOMP Performs signal flucuation noise decomposition 
+%   Using both FA of ABCD phantom acquisition pipelines decompose the noise
+%   contributions from background noise and signal flucuation noise 
+
+%   Ideal case modelling case: 
+%       Temporal stability of background signal independent noise
+%       Signal-dependent noise from scanner instability
+
+
+% Based off of methodology in: 
+% Greve, D. N., Mueller, B. A., Liu, T., Turner, J. A., Voyvodic, J., Yetter, E., … 
+% The FBIRN. (2011). 
+% A Novel Method for Quantifying Scanner Instability in fMRI. 
+% Magnetic Resonance in Medicine, 65(4), 1053–1061.
+% http://doi.org/10.1002/mrm.22691
+
+%{
+ Arguments: 
+    vol4D - 4D MR volume 
+    Iave  - Detrended average intensity across time 
+    Isd   - Detrended signal intensity variance 
+
+% Note in ABCD pipelines, detrending fits are estimated with a second
+degree polynomial in time. 
+
+%}
+
+
+%First compute flip angle scale factor matrix 
+M = Iave{1} ./ Iave{2}; 
+
+%Compute signal weighted and background noise
+var_SW = M.^2*(Isd{1} - Isd{2})./(M.^2 - 1); 
+
+
+
+
+
+end
+

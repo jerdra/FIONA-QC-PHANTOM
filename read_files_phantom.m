@@ -5,6 +5,7 @@ function [vol4D, meta, fwhm] = read_files_phantom(input, output)
 %
 %   Detailed explanation goes here
 
+%Load in dicom files from input folder
 filelist = dir(input);
 filelist = filelist(~[filelist.isdir] & ~strncmpi('.', {filelist.name}, 1));
 fullfilename = fullfile(input,filelist(1).name);
@@ -15,6 +16,8 @@ else
     return;
 end
 
+%From header information extract manufacturer and extract acquisition
+%parameters
 if (strfind(info.Manufacturer, 'GE'))
     [meta] = read_ge_phantom(input,filelist);
 elseif  (strfind(info.Manufacturer, 'SIEMENS'))
@@ -25,6 +28,7 @@ else
     return;
 end
 
+%Extract FWHM 
 [vol4D, fwhm] = getFWHM(input,output, meta);
 
 end    
@@ -220,7 +224,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [vol4D, fwhm] = getFWHM(input, output, meta)
-
 filelist = dir(input);
 filelist = filelist(~[filelist.isdir] & ~strncmpi('.', {filelist.name}, 1));
 i=1;
@@ -229,16 +232,22 @@ while (~file_is_dicom(fullfilename)) && (i<length(filelist))
     fullfilename = fullfile(input,filelist(i).name);
 end
 
-fname=fullfile(output,'original_vol.nii');
 
-if ~exist(fname, 'file')
-    if any(strfind(meta.manufact, 'SIEMENS'))
-        cmd = sprintf('mri_convert -it siemens_dicom -ot nii %s %s/original_vol.nii', fullfilename, output);
-    else
-        cmd = sprintf('mri_convert -it dicom -ot nii %s %s/original_vol.nii', fullfilename, output);
-    end
-    unix(cmd);
-end
+%Testing with pre-made output 
+outputlist = dir(output); 
+outputlist([outputlist.isdir]) = []; 
+nii_files = cellfun(@(x) ~isempty(strfind(x,'nii')),{outputlist.name},'un',1); 
+fname = fullfile(output,outputlist(nii_files).name); 
+
+% fname=fullfile(output,'original_vol.nii');
+% if ~exist(fname, 'file')
+%     if any(strfind(meta.manufact, 'SIEMENS'))
+%         cmd = sprintf('mri_convert -it siemens_dicom -ot nii %s %s/original_vol.nii', fullfilename, output);
+%     else
+%         cmd = sprintf('mri_convert -it dicom -ot nii %s %s/original_vol.nii', fullfilename, output);
+%     end
+%     unix(cmd);
+% end
 
 nifti_image = load_nii(fname);
 vol4D = rot90(flip(double(nifti_image.img),1),3);

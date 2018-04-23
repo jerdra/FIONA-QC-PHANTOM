@@ -1,4 +1,4 @@
-function MB_fBIRN_phantom_ABCD(vol4D, meta, output, fwhm)
+function [Iave, Isd] = MB_fBIRN_phantom_ABCD(vol4D, meta, output, fwhm)
 
 %   This code is adapted from Gary Glover fBIRN phantom qa.m matlab code
 %   http://www.birncommunity.org/tools-catalog/function-birn-stability-phantom-qa-procedures/
@@ -14,9 +14,14 @@ function MB_fBIRN_phantom_ABCD(vol4D, meta, output, fwhm)
 %   from dicom header.
 %   output = folder to export results
 %
+%
+%
 %   =======================================================================
+%Modified to output Iave, Isd for signal noise decomposition 
+
 version = '0.0.1'; %Script version to be included as output of json file 
 
+%Extract acquisition parameters 
 tr = meta.TR;
 imageFreq = meta.imageFreq;
 gains = [meta.transmitGain, meta.aRecGain];
@@ -30,15 +35,16 @@ NPIX = vol_dims(1);
 
 vol4D = vol4D(:,:,:,5:end); %Skip four first volumes for multiband
 
-    
+%Selected slice is actually the middle slice 
 selectedSlice = ceil(size(vol4D,3)/2);
 
+%Grab a random slice permutation of the data?  (test this...) 
 data = zeros(vol_dims(1),vol_dims(2),vol_dims(4));
-data = permute(vol4D(:,:,selectedSlice,:),[1 2 4 3]);
+data = permute(vol4D(:,:,selectedSlice,:),[1 2 4 3]); %re-arrange data dimensions
 
 [spatial_drift] = motion_estimates(vol4D,meta,path);
 
-
+%Pixel width of ROI region maximal 
 if(NPIX == 128)
   R = 30;                   % ROI width
 elseif(NPIX == 104)
@@ -47,6 +53,7 @@ else
   R = 15;                   % probably 64x64
 end                         %ROI size fixed
 
+%ROI based masking 
 npo2 = NPIX/2;              %half FOV 
 ro2 = fix(R/2);             %half ROI size
 X1 = npo2 - ro2;            %Beginging of masked image in X
@@ -91,13 +98,14 @@ else
     even_tf_flag=1;
 end
 
+%Loop across time frames
 for j = i1:i2                       %For each tFrame
     workingSlice = data(:,:,j);     %Get appropiate slice
     I = workingSlice(:);            %Image slice as vector
     clear workingSlice;
     if(mod(j,2)==1)
         if even_tf_flag
-            Iodd = Iodd + I; %Add odd images together
+            Iodd = Iodd + I; %Cumulation of odd time slices...
         else
             even_tf_flag=1;
         end
@@ -108,11 +116,11 @@ for j = i1:i2                       %For each tFrame
     Syt = Syt + I*j;         % Calc Sum t=1,nFrame; t*It
     Syy = Syy + I.*I;        % Calc Sum t=1,nFrame; It*It
     S0 = S0 + 1;             % Update counter
-    St = St + j;             % Calc Sum t=1,nFrame; t
-    Stt = Stt + j*j;         % Calc Sum t=1,nFrame; t^2 
+    St = St + j;             % Calc Sum t=1,nFrame; t, Cumulative time (1st deg poly)
+    Stt = Stt + j*j;         % Calc Sum t=1,nFrame; t^2 Cumulative squared time (2nd deg poly) 
     img(:) = I;
     sub = img(X1:X2,Y1:Y2);         % masked part of image phantom
-    avg_signal_roi(S0) = sum(sum(sub))/npx_roi;    % average signal intensity trough ROI
+    avg_signal_roi(S0) = sum(sum(sub))/npx_roi;    % average signal intensity through ROI
     for r = r1:r2                   % each roi size
       ro2 = fix(r/2);
       x1 = npo2 - ro2;
@@ -126,12 +134,12 @@ end;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  write out diff image
 
-Isub = Iodd - Ieven;        %Isub in vector form
-img(:) = Isub;              %Isub in 2D form
+Isub = Iodd - Ieven;        %Isub in vector form, subtract cumulative sums
+img(:) = Isub;              %Isub in 2D form, convert back into slice form
 sub = img(X1:X2,Y1:Y2);     %Isub within ROI
 varI = var(sub(:));         %Variance of Isub within ROI only
 
-figure
+figure; 
 imagesc(img/(fix(N/2))); 
 colormap(gray);
 colorbar;
@@ -170,6 +178,7 @@ b = (Stt*Sy - St*Syt)/D;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % make sd image
 
+%Compute pixel variance, must be detrended variance! 
 Var = Syy + a.*a*Stt +b.*b*S0 + 2*a.*b*St - 2*a.*Syt - 2*b.*Sy;
 Isd = sqrt(Var/(N-1));
 img(:) = Isd;   
