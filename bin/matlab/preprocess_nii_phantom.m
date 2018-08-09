@@ -4,7 +4,6 @@ function [vol4D, fwhm] = preprocess_nii_phantom(input, output)
 %   Reads Phantom Nii files and preprocesses it for ABCD-QA-Pipeline
 
 [vol4D, fwhm] = getFWHM(input,output);
-
 end    
 
 function [vol4D, fwhm] = getFWHM(fname, output)

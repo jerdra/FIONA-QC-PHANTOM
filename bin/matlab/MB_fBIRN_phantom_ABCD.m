@@ -487,9 +487,9 @@ figure;
 imagesc(datav);
 colormap(gray);
 hold all;
-h=imshow(green);
+h=imagesc(green);
 set(h,'AlphaData',b_phantom);
-h=imshow(red);
+h=imagesc(red);
 set(h,'AlphaData',b_ghost)
 
 set(gcf,'Visible','off','CreateFcn','set(gcf,''Visible'',''on'')'); % this disables the figure and set the 'CreateFcn' property simultaneously
