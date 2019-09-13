@@ -15,11 +15,11 @@ function MB_fBIRN_phantom_ABCD(vol4D, meta, output, fwhm)
 %   output = folder to export results
 %
 %   =======================================================================
-version = '0.0.1'; %Script version to be included as output of json file 
+version = '0.0.2'; %Script version to be included as output of json file 
 
 tr = meta.TR;
-imageFreq = meta.imageFreq;
-gains = [meta.transmitGain, meta.aRecGain];
+%imageFreq = meta.imageFreq;
+%gains = [meta.transmitGain, meta.aRecGain];
 
 path = output;
    
@@ -311,14 +311,9 @@ file = fullfile(path, resultFile);
 
 qc_metrics=struct('mean',meanI,'sd',sd,'snr',snr,'sfnr',sfnrI,'rms',100*sd/m,'temp_drift',100*drift, 'temp_drift_per_minute', 100*drift_per_minute,...
           'max_temp_drift',100*maxabsdrift,'rdc',rdc, 'FWHM_x', fwhm(1), 'FWHM_y', fwhm(2), 'FWHM_z', fwhm(3), 'mean_ghost',mean_ghost,'top_ghost',top_ghost,...
-          'spatial_drift_pe', spatial_drift.max_sdy,'image_frequency', imageFreq,'transmit_gain',...
-          gains(1),'receiver_gain', gains(2));
-series_info=struct('Multiband', 0, 'RepetitionTime', meta.TR, 'EchoTime', meta.TE, 'FlipAngle', meta.FA, 'StudyTime', meta.s_time, 'StudyDate', meta.s_date, 'StudyInstanceUID', meta.si_UID,...,
-          'Manufacturer', meta.manufact, 'ManufacturerModelName', meta.model, 'Coil', meta.coil, 'SeriesDescription', meta.sDes, 'SeriesNumber', meta.se_number, 'SeriesTime', meta.se_time,...,
-          'ScannerSerialNumber', meta.serialNumber, 'OperatingSystemVersion', meta.softVersion, 'OSLevel', meta.osLevel, 'ImageComments', meta.imComments);
+          'spatial_drift_pe', spatial_drift.max_sdy);      
       
-      
-data2json=struct('QA_metrics', qc_metrics, 'SeriesInfo', series_info, 'version', version);       
+data2json=struct('QA_metrics', qc_metrics, 'version', version);       
           
 jsonfile = savejson('fBIRN_Phantom_QA',data2json,struct('FloatFormat','%.3f'));
 fileID = fopen(file,'w');
