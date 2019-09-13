@@ -194,11 +194,16 @@ img(:) = sfnr;                %sfnr image in 2D
 sub = img(X1:X2,Y1:Y2);       %sfnr image within ROI
 sfnrI = mean(sub(:));         %mean sfnr value within ROI
 
+%Threshold the image using quantiles with 99.9% of the dataset (deal with
+%clear outliers)
+q = quantile(sfnr(:),0.999);
+
 % print as 10*sfnr if you want. Not now
 figure
 imagesc(img); % draw a simple figure containing a sine wave, title, etc.
 colormap(gray);
 colorbar;
+caxis([0,q]);
 set(gcf,'Visible','off','CreateFcn','set(gcf,''Visible'',''on'')'); % this disables the figure and set the 'CreateFcn' property simultaneously
 file = 'sfnr.tif';
 filename = fullfile(path, file);

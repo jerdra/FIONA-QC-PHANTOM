@@ -13,7 +13,7 @@ end
 
 %================Read dicom files====================%
 
-[vol,meta,fwhm] = read_files_phantom(input,output);
+[vol,meta,fwhm] = read_nifti_phantom(input,output);
   
 %==============Calls fBIRN QA routine=================%
 
