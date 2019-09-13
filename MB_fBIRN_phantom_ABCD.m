@@ -474,21 +474,21 @@ green(:,:,2)=0.6;
 red=zeros(size(green));
 red(:,:,1)=0.8;
 
-figure;
-imagesc(datav);
-colormap(gray);
-hold all;
-h=imshow(green);
-set(h,'AlphaData',b_phantom);
-h=imshow(red);
-set(h,'AlphaData',b_ghost)
-
-set(gcf,'Visible','off','CreateFcn','set(gcf,''Visible'',''on'')'); % this disables the figure and set the 'CreateFcn' property simultaneously
-resultFile = 'Ghost_Region.tif';
-file = fullfile(path, resultFile);
-saveas(gcf, file) % save the figure in the current folder as a .tiff file
-close;
-
+% figure;
+% imagesc(datav);
+% colormap(gray);
+% hold all;
+% h=imshow(green);
+% set(h,'AlphaData',b_phantom);
+% h=imshow(red);
+% set(h,'AlphaData',b_ghost)
+% 
+% set(gcf,'Visible','off','CreateFcn','set(gcf,''Visible'',''on'')'); % this disables the figure and set the 'CreateFcn' property simultaneously
+% resultFile = 'Ghost_Region.tif';
+% file = fullfile(path, resultFile);
+% saveas(gcf, file) % save the figure in the current folder as a .tiff file
+% close;
+% 
 end
 
 
